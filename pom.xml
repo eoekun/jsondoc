@@ -5,7 +5,7 @@
 
 	<groupId>org.jsondoc</groupId>
 	<artifactId>jsondoc-master</artifactId>
-	<version>1.2.17-SNAPSHOT</version>
+	<version>1.2.17-EOEKUN</version>
 	<packaging>pom</packaging>
 	<name>jsondoc-master</name>
 	<description>Easily generate docs and playground for your RESTful API</description>
@@ -41,14 +41,16 @@
 	</modules>
 
 	<distributionManagement>
-		<snapshotRepository>
-			<id>ossrh</id>
-			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
-		</snapshotRepository>
 		<repository>
-			<id>ossrh</id>
-			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+			<id>weidai.releases</id>
+			<name>Releases</name>
+			<url>http://192.168.17.252:8081/nexus/content/repositories/releases/</url>
 		</repository>
+		<snapshotRepository>
+			<id>weidai.snapshots</id>
+			<name>Snapshots</name>
+			<url>http://192.168.17.252:8081/nexus/content/repositories/snapshots/</url>
+		</snapshotRepository>
 	</distributionManagement>
 
 	<properties>
@@ -261,17 +263,7 @@
 				<version>2.1</version>
 			</plugin>
 
-			<plugin>
-				<groupId>org.sonatype.plugins</groupId>
-				<artifactId>nexus-staging-maven-plugin</artifactId>
-				<version>1.6.2</version>
-				<extensions>true</extensions>
-				<configuration>
-					<serverId>ossrh</serverId>
-					<nexusUrl>https://oss.sonatype.org/</nexusUrl>
-					<autoReleaseAfterClose>true</autoReleaseAfterClose>
-				</configuration>
-			</plugin>
+			
 
 		</plugins>
 	</build>
