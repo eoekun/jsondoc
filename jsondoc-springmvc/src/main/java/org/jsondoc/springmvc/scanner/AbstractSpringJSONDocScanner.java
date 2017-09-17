@@ -109,8 +109,11 @@ public abstract class AbstractSpringJSONDocScanner extends AbstractJSONDocScanne
 					candidates.add((Class<?>) parametrizedType);
 				} else if (parametrizedType instanceof WildcardType) {
 					candidates.add(Void.class);
-				} else {
+				} else if (parametrizedType instanceof ParameterizedType) {
 					candidates.addAll(buildJSONDocObjectsCandidates(candidates, (Class<?>) ((ParameterizedType) parametrizedType).getRawType(), parametrizedType, reflections));
+				} else {
+					log.warn("unkown type switch,type:{},clazz:{}", type, clazz);
+					candidates.add(clazz);
 				}
 			} else if (type instanceof GenericArrayType) {
 				candidates.addAll(buildJSONDocObjectsCandidates(candidates, clazz, ((GenericArrayType) type).getGenericComponentType(), reflections));
