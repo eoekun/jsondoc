@@ -48,6 +48,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.google.common.collect.Sets;
 
+
 public abstract class AbstractSpringJSONDocScanner extends AbstractJSONDocScanner {
 
 	@Override
@@ -122,38 +123,55 @@ public abstract class AbstractSpringJSONDocScanner extends AbstractJSONDocScanne
 			candidates.addAll(buildJSONDocObjectsCandidates(candidates, componentType, type, reflections));
 
 		} else {
-			if (type instanceof ParameterizedType) {
-				Type parametrizedType = ((ParameterizedType) type).getActualTypeArguments()[0];
-				
-				if (parametrizedType instanceof Class) {
-					Class<?> candidate = (Class<?>) parametrizedType;
-					if(candidate.isInterface()) {
-						for (Class<?> implementation : reflections.getSubTypesOf(candidate)) {
-							buildJSONDocObjectsCandidates(candidates, implementation, parametrizedType, reflections);
-						}
-					} else {
-						candidates.add(candidate);
-						candidates.addAll(buildJSONDocObjectsCandidates(candidates, (Class<?>) ((ParameterizedType) type).getRawType(), parametrizedType, reflections));
-					}
-				} else if (parametrizedType instanceof WildcardType) {
-					candidates.add(Void.class);
-					candidates.addAll(buildJSONDocObjectsCandidates(candidates, (Class<?>) ((ParameterizedType) type).getRawType(), parametrizedType, reflections));
-				} else if(parametrizedType instanceof TypeVariable<?>) {
-					candidates.add(Void.class);
-					candidates.addAll(buildJSONDocObjectsCandidates(candidates, (Class<?>) ((ParameterizedType) type).getRawType(), parametrizedType, reflections));
-				} else {
-					candidates.addAll(buildJSONDocObjectsCandidates(candidates, (Class<?>) ((ParameterizedType) parametrizedType).getRawType(), parametrizedType, reflections));
-				}
-			} else if(clazz.isInterface()) {
-				for (Class<?> implementation : reflections.getSubTypesOf(clazz)) {
-					candidates.addAll(buildJSONDocObjectsCandidates(candidates, implementation, type, reflections));
-				}
-				
-			} else {
-				candidates.add(clazz);
-			}
+			Set<Class<?>> candidates2 = getSet(clazz,  type,  reflections);
+			candidates.addAll(candidates2);		
 		}
+		return candidates;
+	}
 
+	/**
+	 * 
+	 * @param clazz
+	 * @param type
+	 * @param reflections
+	 * @return Set<Class<?>>
+	 * @author eoekun
+	 * @createTime 2017-09-17 21:31:40
+	 */
+	private static Set<Class<?>> getSet(Class<?> clazz, Type type, Reflections reflections) {
+		Set<Class<?>> candidates = new HashSet<Class<?>>();
+		if (type instanceof ParameterizedType) {
+			Type parametrizedType = ((ParameterizedType) type).getActualTypeArguments()[0];
+			
+			if (parametrizedType instanceof Class) {
+				Class<?> candidate = (Class<?>) parametrizedType;
+				if(candidate.isInterface()) {
+					for (Class<?> implementation : reflections.getSubTypesOf(candidate)) {
+						buildJSONDocObjectsCandidates(candidates, implementation, parametrizedType, reflections);
+					}
+				} else {
+					candidates.add(candidate);
+					candidates.addAll(buildJSONDocObjectsCandidates(candidates, (Class<?>) ((ParameterizedType) type).getRawType(), parametrizedType, reflections));
+				}
+			} else if (parametrizedType instanceof WildcardType) {
+				candidates.add(Void.class);
+				candidates.addAll(buildJSONDocObjectsCandidates(candidates, (Class<?>) ((ParameterizedType) type).getRawType(), parametrizedType, reflections));
+			} else if(parametrizedType instanceof TypeVariable<?>) {
+				candidates.add(Void.class);
+				candidates.addAll(buildJSONDocObjectsCandidates(candidates, (Class<?>) ((ParameterizedType) type).getRawType(), parametrizedType, reflections));
+			} else if(parametrizedType instanceof ParameterizedType) {
+				Type parametrizedType2 = ((ParameterizedType) parametrizedType).getActualTypeArguments()[0];
+				return getSet(clazz, parametrizedType2, reflections);
+			} else {
+				candidates.addAll(buildJSONDocObjectsCandidates(candidates, (Class<?>) ((ParameterizedType) parametrizedType).getRawType(), parametrizedType, reflections));
+			}
+		} else if(clazz.isInterface()) {
+			for (Class<?> implementation : reflections.getSubTypesOf(clazz)) {
+				candidates.addAll(buildJSONDocObjectsCandidates(candidates, implementation, type, reflections));
+			}
+		} else {
+			candidates.add(clazz);
+		}
 		return candidates;
 	}
 
