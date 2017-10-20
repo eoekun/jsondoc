@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="utf-8">
 <title>JSONDoc</title>
@@ -11,7 +11,6 @@
 <script type="text/javascript" src="webjars/jsondoc-ui-webjar/js/bootstrap.min.js"></script>
 <script type="text/javascript" src="webjars/jsondoc-ui-webjar/js/handlebars.min.js"></script>
 <script type="text/javascript" src="webjars/jsondoc-ui-webjar/js/prettify.js"></script>
-<script type="text/javascript" src="webjars/jsondoc-ui-webjar/js/jlinq.js"></script>
 <script type="text/javascript" src="webjars/jsondoc-ui-webjar/js/jsondoc.js"></script>
 
 <link rel="stylesheet" href="webjars/jsondoc-ui-webjar/css/bootstrap.min.css" >
@@ -31,9 +30,9 @@
     		</div>
     		<form class="navbar-form navbar-left col-md-8" role="search">
 				<div class="form-group">
-		        	<input id="jsondocfetch" type="text" class="form-control" style="width:350px" placeholder="Insert here the JSONDoc URL" autocomplete="off">
+		        	<input id="jsondocfetch" value="http://localhost:8080/jsondoc" type="text" class="form-control" style="width:350px" placeholder="Insert here the JSONDoc URL" autocomplete="off">
 		        </div>
-		        <button id="getDocButton" class="btn btn-default">Get documentation</button>
+		        <button id="getDocButton" class="btn btn-default">获取文档</button>
 		    </form>
 		</div>
 	</nav>
@@ -68,6 +67,7 @@
   <p style="text-transform: uppercase;">API info</span></p>
   <small>Base path: {{basePath}}</small>
   <small>Version: {{version}}</small>
+  <br/>
 </blockquote>
 </script>
 
@@ -81,12 +81,12 @@
 <div id="_panel-global" class="panel-collapse collapse in" aria-labelledby="panel-global">
 	<div class="panel-body">
 		<ul class="list-unstyled">
-			<li><a href="#" id="_overview" rel="global">Global documentation</a></li>
+			<li><a href="#" id="_overview" rel="global">文档说明</a></li>
 			{{#if global.changelogset.changelogs}}
-				<li><a href="#" id="_changelogs" rel="global">Changelog</a></li>
+				<li><a href="#" id="_changelogs" rel="global">更新日志</a></li>
 			{{/if}}
 			{{#if global.migrationset.migrations}}
-				<li><a href="#" id="_migrations" rel="global">Migration notes</a></li>
+				<li><a href="#" id="_migrations" rel="global">版本迁移</a></li>
 			{{/if}}
 		</ul>
 	</div>
@@ -133,7 +133,7 @@
 				<li style="text-transform: uppercase;">{{key}}</li>
 				{{/if}}
 				{{#each value}}
-					<li><a href="#" id="{{jsondocId}}" rel="object">{{name}}</a></li>
+					<li><a href="#" id="{{jsondocId}}" rel="object">{{name}}</a><span style="font-size: 10px;">({{description}})</span></li>
 				{{/each}}
 			</ul>
 		{{/eachInMap}}
@@ -281,7 +281,7 @@
 					<span class="label pull-right verb {{this}}">{{this}}</span>
 				{{/each}}
 				{{#each path}}
-					<a id="{{../jsondocId}}" href="#_{{../jsondocId}}" rel="method" data-toggle="collapse" data-parent="#accordion" aria-controls="_{{../jsondocId}}" aria-expanded="true">{{../displayedMethodString}}</a><br/>	
+					<a id="{{../jsondocId}}" href="#_{{../jsondocId}}" rel="method" data-toggle="collapse" data-parent="#accordion" aria-controls="_{{../jsondocId}}" aria-expanded="true">{{../displayedMethodString}}({{../description}})</a><br/>	
 				{{/each}}
 			</h4>
 		</div>
@@ -297,7 +297,7 @@
 				{{/if}}
 				<table class="table table-condensed table-bordered" style="table-layout: fixed;">
 					<tr>
-						<th style="width:18%;">Path</th>
+						<th style="width:30%;">Path</th>
 						<td>
 						{{#each path}}
 						<code>{{this}}</code><br/>
@@ -752,7 +752,7 @@
 
 <script id="object" type="text/x-handlebars-template">
 <table class="table table-condensed table-striped table-bordered" style="table-layout: fixed;">
-	<tr><th style="width:18%;">Name</th><td><code>{{name}}</code></td></tr>
+	<tr><th style="width:30%;">Name</th><td><code>{{name}}</code></td></tr>
 	{{#if description}}
 		<tr><th>Description</th><td>{{{description}}}</td></tr>
 	{{/if}}
@@ -1006,14 +1006,41 @@
 			$("#content").parent().addClass("col-md-9");
 		}
 	}
-	
+	// add by chenkun
+	var authId;
+	function getCookie(cookie_name) {
+		var allcookies = document.cookie;
+		var cookie_pos = allcookies.indexOf(cookie_name); //索引的长度
+
+		// 如果找到了索引，就代表cookie存在，
+		// 反之，就说明不存在。
+		if (cookie_pos != -1) {
+			// 把cookie_pos放在值的开始，只要给值加1即可。
+			cookie_pos += cookie_name.length + 1; //这里容易出问题，所以请大家参考的时候自己好好研究一下
+			var cookie_end = allcookies.indexOf(";", cookie_pos);
+
+			if (cookie_end == -1) {
+				cookie_end = allcookies.length;
+			}
+
+			var value = unescape(allcookies.substring(cookie_pos, cookie_end)); //这里就可以得到你想要的cookie的值了。。。
+		}
+		return value;
+	}
 	function buildMethodsContent(items, playgroundEnabled) {
 		resetLayoutClasses();
 		
 		if(playgroundEnabled) {
 			$('#content a[rel="method"]').each(function() {
 				$(this).click(function() {
-					var method = jlinq.from(items).equals("jsondocId", this.id).first();
+
+                    var method = null;
+                    for(i = 0; i<items.length; i++) {
+                        if(items[i].jsondocId == this.id) {
+                            method = items[i];
+                        }
+                    }
+
 					var test = Handlebars.compile($("#test").html());
 					var testHTML = test(method);
 					$("#testContent").html(testHTML);
@@ -1035,7 +1062,14 @@
 						$("#headers input").each(function() {
 							headers[this.name] = $(this).val();
 						});
-						
+						// chenkun 设置头标识为app
+						headers["isApp"] = true;
+						// chenkun 设置头标识debug模式,忽略app合法性校验
+						headers["isDebug"] = true;
+						// chenkun 设置权限认证
+						if (authId) {
+							headers["authId"] = authId;
+						}
 						headers["Accept"] = $("#produces input:checked").val();
 
 						if(method.auth) {
@@ -1061,9 +1095,13 @@
 						
 						$("#pathparameters input").each(function() {
 							$('#' + this.id).parent().removeClass('has-error');
-							
 							if($(this).val()) {
-								tempReplacedPath = replacedPath.replace("{"+this.name+"}", $(this).val());
+								// add by chenkun
+								if (replacedPath.indexOf("{" + this.name + ":.+}") > 0) {
+									tempReplacedPath = replacedPath.replace("{" + this.name + ":.+}", $(this).val());
+								} else {
+									tempReplacedPath = replacedPath.replace("{" + this.name + "}", $(this).val());
+								}
 								replacedPath = tempReplacedPath;	
 							} else {
 								validationErrors.push(this.name + ' must not be empty');
@@ -1101,14 +1139,20 @@
 						}
 
 						$('#testButton').button('loading');
-						
 						var res = $.ajax({
 							url : model.basePath + replacedPath,
 							type: requestMethod,
 							data: $("#inputJson").val(),
 							headers: headers,
+							xhrFields: {
+					            withCredentials: true
+					        },
+					        crossDomain: true,
 							contentType: $("#consumes input:checked").val(),
 							success : function(data) {
+								if (replacedPath.startsWith('/api/v1/public/login')) {
+									authId = data.d;
+								}
 								printResponse(data, res, this.url);
 							},
 							error: function(data) {
@@ -1179,7 +1223,6 @@
 				$("#_panel-apis").removeClass("in");
 			}
 
-			// this builds an plain array out of the apis map, that makes selecting with jlinq much easier
 			var plainApis = [];
 			$.each(data.apis, function(i, v) {
 				$.each(v, function(j, p) {
@@ -1189,7 +1232,14 @@
 			
 			$("#apidiv a[rel='api']").each(function() {
 				$(this).click(function() {
-					var api = jlinq.from(plainApis).equals("jsondocId", this.id).first();
+
+				    var api = null;
+				    for(i = 0; i<plainApis.length; i++) {
+				        if(plainApis[i].jsondocId == this.id) {
+                            api = plainApis[i];
+                        }
+                    }
+
 					var methods = Handlebars.compile($("#methods").html());
 					var methodsHTML = methods(api);
 					$("#content").html(methodsHTML);
@@ -1213,7 +1263,6 @@
 			$("#objectdiv").html(objectsHTML);
 			$("#objectdiv").addClass("panel panel-default");
 
-			// this builds an plain array out of the objects map, that makes selecting with jlinq much easier
 			var plainObjects = [];
 			$.each(data.objects, function(i, v) {
 				$.each(v, function(j, p) {
@@ -1223,7 +1272,14 @@
 			
 			$("#objectdiv a[rel='object']").each(function() {
 				$(this).click(function() {
-					var o = jlinq.from(plainObjects).equals("jsondocId", this.id).first();
+
+				    var o = null;
+                    for(i = 0; i<plainObjects.length; i++) {
+                        if(plainObjects[i].jsondocId == this.id) {
+                            o = plainObjects[i];
+                        }
+                    }
+
 					buildObjectContent(o, data.playgroundEnabled);
 				});
 			});
@@ -1235,7 +1291,6 @@
 			$("#flowdiv").html(flowsHTML);
 			$("#flowdiv").addClass("panel panel-default");
 
-			// this builds an plain array out of the flows map, that makes selecting with jlinq much easier
 			var plainFlows = [];
 			$.each(data.flows, function(i, v) {
 				$.each(v, function(j, p) {
@@ -1245,7 +1300,14 @@
 			
 			$("#flowdiv a[rel='flow']").each(function() {
 				$(this).click(function() {
-					var flow = jlinq.from(plainFlows).equals("jsondocId", this.id).first();
+
+                    var flow = null;
+                    for(i = 0; i<plainFlows.length; i++) {
+                        if(plainFlows[i].jsondocId == this.id) {
+                            flow = plainFlows[i];
+                        }
+                    }
+
 					var methods = Handlebars.compile($("#methods").html());
 					var methodsHTML = methods(flow);
 					$("#content").html(methodsHTML);

@@ -11,16 +11,19 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.fluttercode.datafactory.impl.DataFactory;
 import org.jsondoc.core.annotation.ApiObjectField;
 import org.jsondoc.core.pojo.JSONDocTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.jsonzou.jmockdata.JMockData;
+
 public class JSONDocTemplateBuilder {
 
 	private static final Logger log = LoggerFactory.getLogger(JSONDocTemplateBuilder.class);
 	private static final Map<Class<?>, Class<?>> primitives = new HashMap<Class<?>, Class<?>>();
-
+	private static final DataFactory df = new DataFactory();
 	static {
 		primitives.put(boolean.class, Boolean.class);
 		primitives.put(byte.class, Byte.class);
@@ -35,11 +38,11 @@ public class JSONDocTemplateBuilder {
 
 	public static JSONDocTemplate build(Class<?> clazz, Set<Class<?>> jsondocObjects) {
 		final JSONDocTemplate jsonDocTemplate = new JSONDocTemplate();
-		
-		if(jsondocObjects.contains(clazz)) {
+
+		if (jsondocObjects.contains(clazz)) {
 			try {
 				Set<JSONDocFieldWrapper> fields = getAllDeclaredFields(clazz);
-	
+
 				for (JSONDocFieldWrapper jsondocFieldWrapper : fields) {
 					Field field = jsondocFieldWrapper.getField();
 					String fieldName = field.getName();
@@ -47,24 +50,28 @@ public class JSONDocTemplateBuilder {
 					if (apiObjectField != null && !apiObjectField.name().isEmpty()) {
 						fieldName = apiObjectField.name();
 					}
-	
+
 					Object value;
-					// This condition is to avoid StackOverflow in case class "A"
+					// This condition is to avoid StackOverflow in case class
+					// "A"
 					// contains a field of type "A"
 					if (field.getType().equals(clazz) || (apiObjectField != null && !apiObjectField.processtemplate())) {
 						value = getValue(Object.class, field.getGenericType(), fieldName, jsondocObjects);
 					} else {
 						value = getValue(field.getType(), field.getGenericType(), fieldName, jsondocObjects);
 					}
-	
+					// add by eoekun
+					if ("serialVersionUID".equals(fieldName)) {
+						continue;
+					}
 					jsonDocTemplate.put(fieldName, value);
 				}
-	
+
 			} catch (Exception e) {
 				log.error("Error in JSONDocTemplate creation for class [" + clazz.getCanonicalName() + "]", e);
 			}
 		}
-		
+
 		return jsonDocTemplate;
 	}
 
@@ -77,12 +84,27 @@ public class JSONDocTemplateBuilder {
 			return new HashMap<Object, Object>();
 
 		} else if (Number.class.isAssignableFrom(fieldClass)) {
+			try {
+				return JMockData.mockSimpleType(Integer.class);
+			} catch (Exception e) {
+				log.warn("mock data exception,", e);
+			}
 			return new Integer(0);
 
 		} else if (String.class.isAssignableFrom(fieldClass) || fieldClass.isEnum()) {
+			try {
+				return df.getStreetName();
+			} catch (Exception e) {
+				log.warn("mock data exception,", e);
+			}
 			return new String("");
 
 		} else if (Boolean.class.isAssignableFrom(fieldClass)) {
+			try {
+				return JMockData.mockSimpleType(Boolean.class);
+			} catch (Exception e) {
+				log.warn("mock data exception,", e);
+			}
 			return new Boolean("true");
 
 		} else if (fieldClass.isArray() || Collection.class.isAssignableFrom(fieldClass)) {
@@ -96,14 +118,14 @@ public class JSONDocTemplateBuilder {
 
 	private static Set<JSONDocFieldWrapper> getAllDeclaredFields(Class<?> clazz) {
 		Set<JSONDocFieldWrapper> fields = new TreeSet<JSONDocFieldWrapper>();
-		
+
 		List<Field> declaredFields = new ArrayList<Field>();
 		if (clazz.isEnum()) {
 			return fields;
 		} else {
 			declaredFields.addAll(Arrays.asList(clazz.getDeclaredFields()));
 		}
-		
+
 		for (Field field : declaredFields) {
 			if (field.isAnnotationPresent(ApiObjectField.class)) {
 				ApiObjectField annotation = field.getAnnotation(ApiObjectField.class);
