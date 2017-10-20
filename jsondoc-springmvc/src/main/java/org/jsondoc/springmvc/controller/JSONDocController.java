@@ -101,8 +101,21 @@ public class JSONDocController {
 
 	@RequestMapping(value = JSONDocController.JSONDOC_DEFAULT_PATH, method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
 	public @ResponseBody JSONDoc getApi() {
-		List<String> packages = getPackages();
-		return jsondocScanner.getJSONDoc(version, basePath, packages, playgroundEnabled, displayMethodAs);
+		JSONDoc result = null;
+		if (!apiEnabled) {
+			result = new JSONDoc(version, basePath);
+			result.setErrorMsg("Jsondoc plugin is not allow at this environment");
+			return result;
+		}
+		try {
+			List<String> packages = getPackages();
+			return jsondocScanner.getJSONDoc(version, basePath, packages, playgroundEnabled, displayMethodAs);
+		} catch (Exception e) {
+			LOGGER.error("get jsondoc api json exception,", e);
+			result = new JSONDoc(version, basePath);
+			result.setErrorMsg(e.getMessage());
+			return result;
+		}
 	}
 
 	/**
