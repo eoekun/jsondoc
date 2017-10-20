@@ -12,6 +12,8 @@ echo "Releasing with version: $RELEASEVERSION"
 
 # mvn versions:set -DnewVersion=$RELEASEVERSION
 mvn clean dependency:unpack package deploy -Dmaven.test.skip=true
+# cd jsondoc-ui-webjar/
+# mvn clean dependency:unpack package deploy -Dmaven.test.skip=true
 # mvn versions:commit
 
 
