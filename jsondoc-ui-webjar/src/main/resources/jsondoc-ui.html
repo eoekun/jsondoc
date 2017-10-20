@@ -1345,7 +1345,13 @@
 			dataType: 'json',
 			contentType: "application/json; charset=utf-8",
 			success : function(data) {
-				buildFromJSONDoc(data);
+				if (!data) {
+					alert('unkown error, please check network!');
+				} else if (data.errorMsg) {
+					alert(data.errorMsg);
+				} else {
+					buildFromJSONDoc(data);
+				}
 			},
 			error: function(msg) {
 				alert("Error " + msg);
