@@ -12,6 +12,7 @@
 <script type="text/javascript" src="webjars/jsondoc-ui-webjar/js/handlebars.min.js"></script>
 <script type="text/javascript" src="webjars/jsondoc-ui-webjar/js/prettify.js"></script>
 <script type="text/javascript" src="webjars/jsondoc-ui-webjar/js/jsondoc.js"></script>
+<script type="text/javascript" src="webjars/jsondoc-ui-webjar/js/jquery.md5.js"></script>
 
 <link rel="stylesheet" href="webjars/jsondoc-ui-webjar/css/bootstrap.min.css" >
 <link rel="stylesheet" href="webjars/jsondoc-ui-webjar/css/jsondoc.css" >
@@ -1066,6 +1067,7 @@
 						headers["isApp"] = true;
 						// chenkun 设置头标识debug模式,忽略app合法性校验
 						headers["isDebug"] = true;
+						headers["Device-ID"] = $.md5(navigator.userAgent);
 						// chenkun 设置权限认证
 						if (authId) {
 							headers["authId"] = authId;
