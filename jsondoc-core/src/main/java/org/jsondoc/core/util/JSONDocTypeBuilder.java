@@ -33,7 +33,8 @@ public class JSONDocTypeBuilder {
 				jsondocType.setMapValue(new JSONDocType());
 
 				if (mapKeyType instanceof Class) {
-					jsondocType.setMapKey(new JSONDocType(((Class<?>) mapKeyType).getSimpleName().toLowerCase()));
+					// eoekun remove java.lang.String.toLowerCase()
+					jsondocType.setMapKey(new JSONDocType(((Class<?>) mapKeyType).getSimpleName()));
 				} else if (mapKeyType instanceof WildcardType) {
 					jsondocType.setMapKey(new JSONDocType(WILDCARD));
 				}  else if(mapKeyType instanceof TypeVariable<?>){
@@ -43,7 +44,8 @@ public class JSONDocTypeBuilder {
 				}
 
 				if (mapValueType instanceof Class) {
-					jsondocType.setMapValue(new JSONDocType(((Class<?>) mapValueType).getSimpleName().toLowerCase()));
+					// eoekun remove java.lang.String.toLowerCase()
+					jsondocType.setMapValue(new JSONDocType(((Class<?>) mapValueType).getSimpleName()));
 				} else if (mapValueType instanceof WildcardType) {
 					jsondocType.setMapValue(new JSONDocType(WILDCARD));
 				} else if(mapValueType instanceof TypeVariable<?>){
@@ -99,16 +101,17 @@ public class JSONDocTypeBuilder {
 		return jsondocType;
 	}
 	
+	// eoekun remove -> toLowerCase();
 	private static String getCustomClassName(Class<?> clazz) {
 		if(clazz.isAnnotationPresent(ApiObject.class)) {
 			ApiObject annotation = clazz.getAnnotation(ApiObject.class);
 			if(annotation.name().isEmpty()) {
-				return clazz.getSimpleName().toLowerCase();
+				return clazz.getSimpleName();
 			} else {
 				return annotation.name();
 			}
 		} else {
-			return clazz.getSimpleName().toLowerCase();
+			return clazz.getSimpleName();
 		}
 	}
 
