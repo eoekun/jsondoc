@@ -1151,7 +1151,14 @@
 							}
 						});
 						// fileparameters
-						var file = document.getElementById("uploadFile").files[0];
+						var uploadFileElement = document.getElementById("uploadFile");
+						var file;
+						if (uploadFileElement) {
+							var files = document.getElementById("uploadFile").files;
+							if (files && files.lenth > 0) {
+								file = files[0];
+							}
+						}
 						var formData = $("#inputJson").val();
 						var processData;
 						var contentType = $("#consumes input:checked").val();
