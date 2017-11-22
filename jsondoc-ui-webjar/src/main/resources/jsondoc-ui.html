@@ -652,6 +652,19 @@
 		</div>
 		</div>
 	{{/if}}
+	{{else}}
+		{{#if consumes}}
+			{{#consumes}}
+				{{#compare this "multipart/form-data" operator="=="}}
+					<div class="col-md-6" data-desc="add by chenkun" style="margin-left:0px">		
+					<div id="consumes" class="playground-spacer">
+					<h4>Content type</h4>	
+						<label><input type="radio" name="consumes" value="{{this}}"> {{this}}</label>
+					</div>
+					</div>
+				{{/compare}}
+			{{/consumes}}
+		{{/if}}
 	{{/if}}
 
 	<div class="col-md-12">
@@ -673,6 +686,19 @@
 			{{/pathparameters}}
 		</div>
 	</div>
+	{{/if}}
+
+	{{#if consumes}}
+		{{#consumes}}
+			{{#compare this "multipart/form-data" operator="=="}}
+				<div class="col-md-12">
+					<div id="fileparameters" data-desc="add by chenkun" class="playground-spacer">
+						<h4>File parameters</h4>
+						<label><input type="file" name="uploadFile" id="uploadFile" /></label>
+					</div>
+				</div>
+			{{/compare}}
+		{{/consumes}}
 	{{/if}}
 
 	{{#if queryparameters}}
@@ -1124,7 +1150,30 @@
 								}
 							}
 						});
-						
+						// fileparameters
+						var file = document.getElementById("uploadFile").files[0];
+						var formData = $("#inputJson").val();
+						var processData;
+						var contentType = $("#consumes input:checked").val();
+						if (file) {
+							if (!formData) {
+								formData = new FormData();
+								var fileFormName = queryParametersMap.fileName;
+								if (!fileFormName) {
+									console.log('without define file input form name, plz check.use default name : fileName')
+									fileFormName = 'fileName';
+								}
+								formData.append(fileFormName, file);
+								contentType = false;
+								processData = false;
+							} else {
+								alert('can not upload file with requestbody!');
+								return;
+							}
+						} else if ('multipart/form-data' == contentType) {
+							alert('please select file input!');
+							return;
+						}
 						var encodedQueryParameters = $.param(queryParametersMap);
 						if(encodedQueryParameters) {
 							replacedPath = replacedPath + "?" + encodedQueryParameters;	
@@ -1139,18 +1188,18 @@
 							validationErrors = [];
 							return;
 						}
-
 						$('#testButton').button('loading');
 						var res = $.ajax({
 							url : model.basePath + replacedPath,
 							type: requestMethod,
-							data: $("#inputJson").val(),
+							data: formData,
 							headers: headers,
 							xhrFields: {
 					            withCredentials: true
 					        },
 					        crossDomain: true,
-							contentType: $("#consumes input:checked").val(),
+							contentType: contentType,
+							processData: processData,
 							success : function(data) {
 								if (replacedPath.startsWith('/api/v1/public/login')) {
 									authId = data.d;
