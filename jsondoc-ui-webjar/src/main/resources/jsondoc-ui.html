@@ -1150,42 +1150,41 @@
 								}
 							}
 						});
+						// for file
+						var processData, contentType = $("#consumes input:checked").val();
+						var formData = $("#inputJson").val();
 						// fileparameters
 						var uploadFileElement = document.getElementById("uploadFile");
-						var file;
 						if (uploadFileElement) {
 							var files = document.getElementById("uploadFile").files;
 							if (files && files.length > 0) {
-								file = files[0];
-							}
-						}
-						var formData = $("#inputJson").val();
-						var processData;
-						var contentType = $("#consumes input:checked").val();
-						if (file) {
-							if (!formData) {
+								if (formData) {
+									alert('can not upload file with requestbody!');
+									return;
+								}
 								formData = new FormData();
 								var fileFormName = queryParametersMap.fileName;
 								if (!fileFormName) {
 									console.log('without define file input form name, plz check.use default name : fileName')
 									fileFormName = 'fileName';
 								}
-								formData.append(fileFormName, file);
+								formData.append(fileFormName, files[0]);
 								contentType = false;
 								processData = false;
-							} else {
-								alert('can not upload file with requestbody!');
+							} else if ('multipart/form-data' == contentType) {
+								alert('please select file input!');
 								return;
 							}
-						} else if ('multipart/form-data' == contentType) {
-							alert('please select file input!');
-							return;
 						}
-						var encodedQueryParameters = $.param(queryParametersMap);
-						if(encodedQueryParameters) {
-							replacedPath = replacedPath + "?" + encodedQueryParameters;	
+						// 若requestBody为空且是post请求,则将参数放置表单中
+						if (!formData && "POST" == requestMethod) {
+							formData = queryParametersMap;
+						} else {
+							var encodedQueryParameters = $.param(queryParametersMap);
+							if (encodedQueryParameters) {
+								replacedPath = replacedPath + "?" + encodedQueryParameters;
+							}
 						}
-						
 						if(validationErrors.length > 0) {
 							for (var k=0; k<validationErrors.length; k++) {
 								$('#validationerrors ul').append($('<li/>').text(validationErrors[k]));
