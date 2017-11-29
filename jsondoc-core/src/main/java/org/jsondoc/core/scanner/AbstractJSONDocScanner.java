@@ -17,6 +17,7 @@ import org.jsondoc.core.annotation.flow.ApiFlow;
 import org.jsondoc.core.pojo.ApiDoc;
 import org.jsondoc.core.pojo.ApiMethodDoc;
 import org.jsondoc.core.pojo.ApiObjectDoc;
+import org.jsondoc.core.pojo.ApiVisibility;
 import org.jsondoc.core.pojo.JSONDoc;
 import org.jsondoc.core.pojo.JSONDoc.MethodDisplay;
 import org.jsondoc.core.pojo.JSONDocTemplate;
@@ -121,6 +122,11 @@ public abstract class AbstractJSONDocScanner implements JSONDocScanner {
 	public Set<ApiDoc> getApiDocs(Set<Class<?>> classes, MethodDisplay displayMethodAs) {
 		Set<ApiDoc> apiDocs = new TreeSet<ApiDoc>();
 		for (Class<?> controller : classes) {
+			Api apiAnnotation = controller.getAnnotation(Api.class);
+			if (ApiVisibility.PRIVATE.equals(apiAnnotation.visibility())) {
+				// add by eoekun
+				continue;
+			}
 			ApiDoc apiDoc = getApiDoc(controller, displayMethodAs);
 			apiDocs.add(apiDoc);
 		}
