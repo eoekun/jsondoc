@@ -157,6 +157,11 @@ public abstract class AbstractJSONDocScanner implements JSONDocScanner {
 		Set<ApiMethodDoc> apiMethodDocs = new TreeSet<ApiMethodDoc>();
 		Set<Method> methods = jsondocMethods(controller);
 		for (Method method : methods) {
+			Api apiAnnotation = method.getAnnotation(Api.class);
+			if (ApiVisibility.PRIVATE.equals(apiAnnotation.visibility())) {
+				// add by eoekun
+				continue;
+			}
 			ApiMethodDoc apiMethodDoc = getApiMethodDoc(method, controller, displayMethodAs);
 			apiMethodDocs.add(apiMethodDoc);
 		}
