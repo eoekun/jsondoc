@@ -1089,11 +1089,10 @@
 						$("#headers input").each(function() {
 							headers[this.name] = $(this).val();
 						});
-						// chenkun 设置头标识为app
-						headers["isApp"] = true;
-						// chenkun 设置头标识debug模式,忽略app合法性校验
-						headers["isDebug"] = true;
+						headers['Device'] = '4';
+						headers['Device-Version'] = '1.0.0';
 						headers["Device-ID"] = $.md5(navigator.userAgent);
+						headers["Device-Mac"] = 'tag=e7f9bf899132767d9450f61470ae796f;sign=YMjAxNzAxMjE0mE1MTA1MDQxOTAxYWYwZjczMjNkMjMwYWMxMTM4NGY=;';
 						// chenkun 设置权限认证
 						if (authId) {
 							headers["authId"] = authId;
