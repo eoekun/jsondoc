@@ -1,18 +1,23 @@
 package org.jsondoc.core.util;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Sets;
+import org.hamcrest.CoreMatchers;
+import org.jsondoc.core.pojo.JSONDocTemplate;
+import org.jsondoc.core.util.pojo.ClassWithConstant;
+import org.jsondoc.core.util.pojo.TemplateObject;
+import org.junit.Assert;
+import org.junit.Test;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.jsondoc.core.pojo.JSONDocTemplate;
-import org.jsondoc.core.util.pojo.TemplateObject;
-import org.junit.Assert;
-import org.junit.Test;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.Sets;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.jsondoc.core.util.pojo.ClassWithConstant.THIS_IS_A_CONSTANT;
 
 public class JSONDocTemplateBuilderTest {
 
@@ -51,4 +56,20 @@ public class JSONDocTemplateBuilderTest {
 		System.out.println(mapper.writeValueAsString(template));
 	}
 
+	@Test
+	public void testTemplateWithConstant() throws Exception {
+        final ObjectMapper mapper = new ObjectMapper();
+        final Set<Class<?>> classes = Sets.<Class<?>>newHashSet(ClassWithConstant.class);
+
+        final Map<String, Object> template = JSONDocTemplateBuilder.build(ClassWithConstant.class, classes);
+        Assert.assertEquals("", template.get("identifier"));
+        Assert.assertEquals(null, template.get(THIS_IS_A_CONSTANT));
+
+        final String serializedTemplate =
+            "{" +
+                "\"identifier\":\"\"" +
+            "}";
+
+        assertThat(mapper.writeValueAsString(template), is(serializedTemplate));
+	}
 }

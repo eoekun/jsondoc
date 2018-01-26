@@ -5,7 +5,7 @@
 
 	<groupId>org.jsondoc</groupId>
 	<artifactId>jsondoc-master</artifactId>
-	<version>1.2.17-SNAPSHOT</version>
+	<version>1.2.20-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>jsondoc-master</name>
 	<description>Easily generate docs and playground for your RESTful API</description>
@@ -75,7 +75,7 @@
 			<dependency>
 				<groupId>org.springframework</groupId>
 				<artifactId>spring-webmvc</artifactId>
-				<version>4.2.0.RELEASE</version>
+				<version>4.3.11.RELEASE</version>
 			</dependency>
 			<dependency>
 				<groupId>org.springframework.data</groupId>
@@ -172,7 +172,7 @@
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-gpg-plugin</artifactId>
-						<version>1.5</version>
+						<version>1.6</version>
 						<executions>
 							<execution>
 								<id>sign-artifacts</id>
@@ -211,11 +211,11 @@
 
 		<plugins>
 			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>2.0.2</version>
 				<configuration>
-					<source>1.6</source>
-					<target>1.6</target>
+					<source>1.7</source>
+					<target>1.7</target>
 				</configuration>
 			</plugin>
 

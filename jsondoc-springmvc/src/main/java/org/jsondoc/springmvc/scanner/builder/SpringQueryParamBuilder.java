@@ -14,6 +14,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ValueConstants;
 
+import static org.jsondoc.springmvc.scanner.SpringBuilderUtils.getAnnotation;
+import static org.jsondoc.springmvc.scanner.SpringBuilderUtils.isAnnotated;
+
 public class SpringQueryParamBuilder {
 
 	/**
@@ -22,39 +25,20 @@ public class SpringQueryParamBuilder {
 	 * inherit this parameter restriction
 	 * 
 	 * @param method
-	 * @param controller
 	 * @return
 	 */
 	public static Set<ApiParamDoc> buildQueryParams(Method method) {
 		Set<ApiParamDoc> apiParamDocs = new LinkedHashSet<ApiParamDoc>();
 		Class<?> controller = method.getDeclaringClass();
 
-		if (controller.isAnnotationPresent(RequestMapping.class)) {
-			RequestMapping requestMapping = controller.getAnnotation(RequestMapping.class);
-			if (requestMapping.params().length > 0) {
-				for (String param : requestMapping.params()) {
-					String[] splitParam = param.split("=");
-					if (splitParam.length > 1) {
-						apiParamDocs.add(new ApiParamDoc(splitParam[0], "", JSONDocTypeBuilder.build(new JSONDocType(), String.class, null), "true", new String[] { splitParam[1] }, null, null));
-					} else {
-						apiParamDocs.add(new ApiParamDoc(param, "", JSONDocTypeBuilder.build(new JSONDocType(), String.class, null), "true", new String[] {}, null, null));
-					}
-				}
-			}
+		if (isAnnotated(controller, RequestMapping.class)) {
+			RequestMapping requestMapping = getAnnotation(controller, RequestMapping.class);
+			addRequestMappingParamDoc(apiParamDocs, requestMapping);
 		}
 
-		if (method.isAnnotationPresent(RequestMapping.class)) {
-			RequestMapping requestMapping = method.getAnnotation(RequestMapping.class);
-			if (requestMapping.params().length > 0) {
-				for (String param : requestMapping.params()) {
-					String[] splitParam = param.split("=");
-					if (splitParam.length > 1) {
-						apiParamDocs.add(new ApiParamDoc(splitParam[0], "", JSONDocTypeBuilder.build(new JSONDocType(), String.class, null), "true", new String[] { splitParam[1] }, null, null));
-					} else {
-						apiParamDocs.add(new ApiParamDoc(param, "", JSONDocTypeBuilder.build(new JSONDocType(), String.class, null), "true", new String[] {}, null, null));
-					}
-				}
-			}
+		if (isAnnotated(method, RequestMapping.class)) {
+			RequestMapping requestMapping = getAnnotation(method, RequestMapping.class);
+			addRequestMappingParamDoc(apiParamDocs, requestMapping);
 		}
 
 		Annotation[][] parametersAnnotations = method.getParameterAnnotations();
@@ -76,7 +60,7 @@ public class SpringQueryParamBuilder {
 				}
 				
 				if (requestParam != null) {
-					apiParamDoc = new ApiParamDoc(requestParam.value(), "", JSONDocTypeBuilder.build(new JSONDocType(), method.getParameterTypes()[i], method.getGenericParameterTypes()[i]), String.valueOf(requestParam.required()), new String[] {}, null, requestParam.defaultValue().equals(ValueConstants.DEFAULT_NONE) ? "" : requestParam.defaultValue());
+					apiParamDoc = new ApiParamDoc(requestParam.value().isEmpty() ? requestParam.name() : requestParam.value(), "", JSONDocTypeBuilder.build(new JSONDocType(), method.getParameterTypes()[i], method.getGenericParameterTypes()[i]), String.valueOf(requestParam.required()), new String[] {}, null, requestParam.defaultValue().equals(ValueConstants.DEFAULT_NONE) ? "" : requestParam.defaultValue());
 					mergeApiQueryParamDoc(apiQueryParam, apiParamDoc);
 				}
 				if(modelAttribute != null) {
@@ -92,6 +76,24 @@ public class SpringQueryParamBuilder {
 		}
 		
 		return apiParamDocs;
+	}
+
+	/**
+	 * Checks the request mapping annotation value and adds the resulting @ApiParamDoc to the documentation
+	 * @param apiParamDocs
+	 * @param requestMapping
+	 */
+	private static void addRequestMappingParamDoc(Set<ApiParamDoc> apiParamDocs, RequestMapping requestMapping) {
+		if (requestMapping.params().length > 0) {
+            for (String param : requestMapping.params()) {
+                String[] splitParam = param.split("=");
+                if (splitParam.length > 1) {
+                    apiParamDocs.add(new ApiParamDoc(splitParam[0], "", JSONDocTypeBuilder.build(new JSONDocType(), String.class, null), "true", new String[] { splitParam[1] }, null, null));
+                } else {
+                    apiParamDocs.add(new ApiParamDoc(param, "", JSONDocTypeBuilder.build(new JSONDocType(), String.class, null), "true", new String[] {}, null, null));
+                }
+            }
+        }
 	}
 
 	/**

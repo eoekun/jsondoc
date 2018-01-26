@@ -8,25 +8,27 @@ import org.jsondoc.core.pojo.ApiVerb;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import static org.jsondoc.springmvc.scanner.SpringBuilderUtils.getAnnotation;
+import static org.jsondoc.springmvc.scanner.SpringBuilderUtils.isAnnotated;
+
 public class SpringVerbBuilder {
 
 	/**
 	 * From Spring's documentation: When [RequestMapping method is] used at the type level, all method-level mappings inherit this HTTP method restriction 
 	 * @param method
-	 * @param controller
 	 * @return
 	 */
 	public static Set<ApiVerb> buildVerb(Method method) {
 		Set<ApiVerb> apiVerbs = new LinkedHashSet<ApiVerb>();
 		Class<?> controller = method.getDeclaringClass();
 		
-		if(controller.isAnnotationPresent(RequestMapping.class)) {
-			RequestMapping requestMapping = controller.getAnnotation(RequestMapping.class);
+		if(isAnnotated(controller, RequestMapping.class)) {
+			RequestMapping requestMapping = getAnnotation(controller, RequestMapping.class);
 			getApiVerbFromRequestMapping(apiVerbs, requestMapping);
 		}
 		
-		if(method.isAnnotationPresent(RequestMapping.class)) {
-			RequestMapping requestMapping = method.getAnnotation(RequestMapping.class);
+		if(isAnnotated(method, RequestMapping.class)) {
+			RequestMapping requestMapping = getAnnotation(method, RequestMapping.class);
 			getApiVerbFromRequestMapping(apiVerbs, requestMapping);
 		}
 		
