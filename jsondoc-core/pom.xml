@@ -5,7 +5,7 @@
 	<parent>
 		<artifactId>jsondoc-master</artifactId>
 		<groupId>org.jsondoc</groupId>
-		<version>1.2.20-SNAPSHOT</version>
+		<version>1.2.19-EOEKUN</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -27,7 +27,7 @@
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-validator</artifactId>
@@ -58,9 +58,17 @@
 			<artifactId>jackson-databind</artifactId>
 			<scope>test</scope>
 		</dependency>
-
+		<dependency>
+			<groupId>com.github.jsonzou</groupId>
+			<artifactId>jmockdata</artifactId>
+			<version>2.4</version>
+		</dependency>
+		<dependency>
+			<groupId>org.fluttercode.datafactory</groupId>
+			<artifactId>datafactory</artifactId>
+			<version>0.8</version>
+		</dependency>
 	</dependencies>
-
 	<build>
 		<finalName>jsondoc-core</finalName>
 	</build>

@@ -89,8 +89,12 @@ public abstract class AbstractSpringJSONDocScanner extends AbstractJSONDocScanne
 					candidates.add((Class<?>) parametrizedType);
 				} else if (parametrizedType instanceof WildcardType) {
 					candidates.add(Void.class);
-				} else {
+				} else if (parametrizedType instanceof ParameterizedType) {
 					candidates.addAll(buildJSONDocObjectsCandidates(candidates, (Class<?>) ((ParameterizedType) parametrizedType).getRawType(), parametrizedType, reflections));
+				} else if (type instanceof ParameterizedType) {
+					candidates.addAll(buildAllSubClassFromParameterizedType((ParameterizedType) type, reflections));
+				} else {
+					log.warn("unkown type switch,type:{},clazz:{}", type, clazz);
 				}
 			} else if (type instanceof GenericArrayType) {
 				candidates.addAll(buildJSONDocObjectsCandidates(candidates, clazz, ((GenericArrayType) type).getGenericComponentType(), reflections));
@@ -103,26 +107,34 @@ public abstract class AbstractSpringJSONDocScanner extends AbstractJSONDocScanne
 			candidates.addAll(buildJSONDocObjectsCandidates(candidates, componentType, type, reflections));
 
 		} else {
-			Set<Class<?>> candidates2 = getSet(clazz,  type,  reflections);
-			candidates.addAll(candidates2);		
+			if (type instanceof ParameterizedType) {
+				candidates.addAll(buildAllSubClassFromParameterizedType((ParameterizedType) type, reflections));
+			} else if(clazz.isInterface()) {
+				for (Class<?> implementation : reflections.getSubTypesOf(clazz)) {
+					candidates.addAll(buildJSONDocObjectsCandidates(candidates, implementation, type, reflections));
+				}
+				
+			} else {
+				candidates.add(clazz);
+			}
 		}
+
 		return candidates;
 	}
-
+	
 	/**
+	 * 获取泛型下所有类
 	 * 
-	 * @param clazz
 	 * @param type
 	 * @param reflections
-	 * @return Set<Class<?>>
-	 * @author eoekun
-	 * @createTime 2017-09-17 21:31:40
+	 * @return Collection<? extends Class<?>>
+	 * @author chenkun
+	 * @createTime 2017年11月13日 下午3:12:09
 	 */
-	private static Set<Class<?>> getSet(Class<?> clazz, Type type, Reflections reflections) {
-		Set<Class<?>> candidates = new HashSet<Class<?>>();
-		if (type instanceof ParameterizedType) {
-			Type parametrizedType = ((ParameterizedType) type).getActualTypeArguments()[0];
-			
+	private static Collection<? extends Class<?>> buildAllSubClassFromParameterizedType(ParameterizedType type, Reflections reflections) {
+		Set<Class<?>> candidates = new HashSet<>();
+		Type[] parametrizedTypes = type.getActualTypeArguments();
+		for (Type parametrizedType : parametrizedTypes) {
 			if (parametrizedType instanceof Class) {
 				Class<?> candidate = (Class<?>) parametrizedType;
 				if(candidate.isInterface()) {
@@ -139,18 +151,9 @@ public abstract class AbstractSpringJSONDocScanner extends AbstractJSONDocScanne
 			} else if(parametrizedType instanceof TypeVariable<?>) {
 				candidates.add(Void.class);
 				candidates.addAll(buildJSONDocObjectsCandidates(candidates, (Class<?>) ((ParameterizedType) type).getRawType(), parametrizedType, reflections));
-			} else if(parametrizedType instanceof ParameterizedType) {
-				Type parametrizedType2 = ((ParameterizedType) parametrizedType).getActualTypeArguments()[0];
-				return getSet(clazz, parametrizedType2, reflections);
 			} else {
 				candidates.addAll(buildJSONDocObjectsCandidates(candidates, (Class<?>) ((ParameterizedType) parametrizedType).getRawType(), parametrizedType, reflections));
 			}
-		} else if(clazz.isInterface()) {
-			for (Class<?> implementation : reflections.getSubTypesOf(clazz)) {
-				candidates.addAll(buildJSONDocObjectsCandidates(candidates, implementation, type, reflections));
-			}
-		} else {
-			candidates.add(clazz);
 		}
 		return candidates;
 	}

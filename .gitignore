@@ -9,3 +9,9 @@
 *.iml
 *.ipr
 *.iws
+
+# mac file temp
+.DS_Store
+
+# springboot 
+.factorypath

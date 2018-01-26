@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="utf-8">
 <title>JSONDoc</title>
@@ -12,6 +12,7 @@
 <script type="text/javascript" src="webjars/jsondoc-ui-webjar/js/handlebars.min.js"></script>
 <script type="text/javascript" src="webjars/jsondoc-ui-webjar/js/prettify.js"></script>
 <script type="text/javascript" src="webjars/jsondoc-ui-webjar/js/jsondoc.js"></script>
+<script type="text/javascript" src="webjars/jsondoc-ui-webjar/js/jquery.md5.js"></script>
 
 <link rel="stylesheet" href="webjars/jsondoc-ui-webjar/css/bootstrap.min.css" >
 <link rel="stylesheet" href="webjars/jsondoc-ui-webjar/css/jsondoc.css" >
@@ -30,9 +31,9 @@
     		</div>
     		<form class="navbar-form navbar-left col-md-8" role="search">
 				<div class="form-group">
-		        	<input id="jsondocfetch" type="text" class="form-control" style="width:350px" placeholder="Insert here the JSONDoc URL" autocomplete="off">
+		        	<input id="jsondocfetch" value="http://localhost:8080/jsondoc" type="text" class="form-control" style="width:350px" placeholder="Insert here the JSONDoc URL" autocomplete="off">
 		        </div>
-		        <button id="getDocButton" class="btn btn-default">Get documentation</button>
+		        <button id="getDocButton" class="btn btn-default">获取文档</button>
 		    </form>
 		</div>
 	</nav>
@@ -67,6 +68,7 @@
   <p style="text-transform: uppercase;">API info</span></p>
   <small>Base path: {{basePath}}</small>
   <small>Version: {{version}}</small>
+  <br/>
 </blockquote>
 </script>
 
@@ -80,12 +82,12 @@
 <div id="_panel-global" class="panel-collapse collapse in" aria-labelledby="panel-global">
 	<div class="panel-body">
 		<ul class="list-unstyled">
-			<li><a href="#" id="_overview" rel="global">Global documentation</a></li>
+			<li><a href="#" id="_overview" rel="global">文档说明</a></li>
 			{{#if global.changelogset.changelogs}}
-				<li><a href="#" id="_changelogs" rel="global">Changelog</a></li>
+				<li><a href="#" id="_changelogs" rel="global">更新日志</a></li>
 			{{/if}}
 			{{#if global.migrationset.migrations}}
-				<li><a href="#" id="_migrations" rel="global">Migration notes</a></li>
+				<li><a href="#" id="_migrations" rel="global">版本迁移</a></li>
 			{{/if}}
 		</ul>
 	</div>
@@ -132,7 +134,7 @@
 				<li style="text-transform: uppercase;">{{key}}</li>
 				{{/if}}
 				{{#each value}}
-					<li><a href="#" id="{{jsondocId}}" rel="object">{{name}}</a></li>
+					<li><a href="#" id="{{jsondocId}}" rel="object">{{name}}</a><span style="font-size: 10px;">({{description}})</span></li>
 				{{/each}}
 			</ul>
 		{{/eachInMap}}
@@ -280,7 +282,7 @@
 					<span class="label pull-right verb {{this}}">{{this}}</span>
 				{{/each}}
 				{{#each displayedMethodString}}
-					<a id="{{../jsondocId}}" href="#_{{../jsondocId}}" rel="method" data-toggle="collapse" data-parent="#accordion" aria-controls="_{{../jsondocId}}" aria-expanded="true">{{this}}</a><br/>
+					<a id="{{../jsondocId}}" href="#_{{../jsondocId}}" rel="method" data-toggle="collapse" data-parent="#accordion" aria-controls="_{{../jsondocId}}" aria-expanded="true">{{../displayedMethodString}}({{../description}})</a><br/>	
 				{{/each}}
 			</h4>
 		</div>
@@ -296,7 +298,7 @@
 				{{/if}}
 				<table class="table table-condensed table-bordered" style="table-layout: fixed;">
 					<tr>
-						<th style="width:18%;">Path</th>
+						<th style="width:30%;">Path</th>
 						<td>
 						{{#each path}}
 						<code>{{this}}</code><br/>
@@ -650,6 +652,19 @@
 		</div>
 		</div>
 	{{/if}}
+	{{else}}
+		{{#if consumes}}
+			{{#consumes}}
+				{{#compare this "multipart/form-data" operator="=="}}
+					<div class="col-md-6" data-desc="add by chenkun" style="margin-left:0px">		
+					<div id="consumes" class="playground-spacer">
+					<h4>Content type</h4>	
+						<label><input type="radio" name="consumes" value="{{this}}"> {{this}}</label>
+					</div>
+					</div>
+				{{/compare}}
+			{{/consumes}}
+		{{/if}}
 	{{/if}}
 
 	<div class="col-md-12">
@@ -671,6 +686,19 @@
 			{{/pathparameters}}
 		</div>
 	</div>
+	{{/if}}
+
+	{{#if consumes}}
+		{{#consumes}}
+			{{#compare this "multipart/form-data" operator="=="}}
+				<div class="col-md-12">
+					<div id="fileparameters" data-desc="add by chenkun" class="playground-spacer">
+						<h4>File parameters</h4>
+						<label><input type="file" name="uploadFile" id="uploadFile" /></label>
+					</div>
+				</div>
+			{{/compare}}
+		{{/consumes}}
 	{{/if}}
 
 	{{#if queryparameters}}
@@ -751,7 +779,7 @@
 
 <script id="object" type="text/x-handlebars-template">
 <table class="table table-condensed table-striped table-bordered" style="table-layout: fixed;">
-	<tr><th style="width:18%;">Name</th><td><code>{{name}}</code></td></tr>
+	<tr><th style="width:30%;">Name</th><td><code>{{name}}</code></td></tr>
 	{{#if description}}
 		<tr><th>Description</th><td>{{{description}}}</td></tr>
 	{{/if}}
@@ -1005,7 +1033,27 @@
 			$("#content").parent().addClass("col-md-9");
 		}
 	}
-	
+	// add by chenkun
+	var authId;
+	function getCookie(cookie_name) {
+		var allcookies = document.cookie;
+		var cookie_pos = allcookies.indexOf(cookie_name); //索引的长度
+
+		// 如果找到了索引，就代表cookie存在，
+		// 反之，就说明不存在。
+		if (cookie_pos != -1) {
+			// 把cookie_pos放在值的开始，只要给值加1即可。
+			cookie_pos += cookie_name.length + 1; //这里容易出问题，所以请大家参考的时候自己好好研究一下
+			var cookie_end = allcookies.indexOf(";", cookie_pos);
+
+			if (cookie_end == -1) {
+				cookie_end = allcookies.length;
+			}
+
+			var value = unescape(allcookies.substring(cookie_pos, cookie_end)); //这里就可以得到你想要的cookie的值了。。。
+		}
+		return value;
+	}
 	function buildMethodsContent(items, playgroundEnabled) {
 		resetLayoutClasses();
 		
@@ -1041,7 +1089,14 @@
 						$("#headers input").each(function() {
 							headers[this.name] = $(this).val();
 						});
-						
+						headers['Device'] = '4';
+						headers['Device-Version'] = '1.0.0';
+						headers["Device-ID"] = $.md5(navigator.userAgent);
+						headers["Device-Mac"] = 'tag=e7f9bf899132767d9450f61470ae796f;sign=YMjAxNzAxMjE0mE1MTA1MDQxOTAxYWYwZjczMjNkMjMwYWMxMTM4NGY=;';
+						// chenkun 设置权限认证
+						if (authId) {
+							headers["authId"] = authId;
+						}
 						headers["Accept"] = $("#produces input:checked").val();
 
 						if(method.auth) {
@@ -1067,9 +1122,13 @@
 						
 						$("#pathparameters input").each(function() {
 							$('#' + this.id).parent().removeClass('has-error');
-							
 							if($(this).val()) {
-								tempReplacedPath = replacedPath.replace("{"+this.name+"}", $(this).val());
+								// add by chenkun
+								if (replacedPath.indexOf("{" + this.name + ":.+}") > 0) {
+									tempReplacedPath = replacedPath.replace("{" + this.name + ":.+}", $(this).val());
+								} else {
+									tempReplacedPath = replacedPath.replace("{" + this.name + "}", $(this).val());
+								}
 								replacedPath = tempReplacedPath;	
 							} else {
 								validationErrors.push(this.name + ' must not be empty');
@@ -1090,12 +1149,41 @@
 								}
 							}
 						});
-						
-						var encodedQueryParameters = $.param(queryParametersMap);
-						if(encodedQueryParameters) {
-							replacedPath = replacedPath + "?" + encodedQueryParameters;	
+						// for file
+						var processData, contentType = $("#consumes input:checked").val();
+						var formData = $("#inputJson").val();
+						// fileparameters
+						var uploadFileElement = document.getElementById("uploadFile");
+						if (uploadFileElement) {
+							var files = document.getElementById("uploadFile").files;
+							if (files && files.length > 0) {
+								if (formData) {
+									alert('can not upload file with requestbody!');
+									return;
+								}
+								formData = new FormData();
+								var fileFormName = queryParametersMap.fileName;
+								if (!fileFormName) {
+									console.log('without define file input form name, plz check.use default name : fileName')
+									fileFormName = 'fileName';
+								}
+								formData.append(fileFormName, files[0]);
+								contentType = false;
+								processData = false;
+							} else if ('multipart/form-data' == contentType) {
+								alert('please select file input!');
+								return;
+							}
 						}
-						
+						// 若requestBody为空且是post请求,则将参数放置表单中
+						if (!formData && "POST" == requestMethod) {
+							formData = queryParametersMap;
+						} else {
+							var encodedQueryParameters = $.param(queryParametersMap);
+							if (encodedQueryParameters) {
+								replacedPath = replacedPath + "?" + encodedQueryParameters;
+							}
+						}
 						if(validationErrors.length > 0) {
 							for (var k=0; k<validationErrors.length; k++) {
 								$('#validationerrors ul').append($('<li/>').text(validationErrors[k]));
@@ -1105,16 +1193,22 @@
 							validationErrors = [];
 							return;
 						}
-
 						$('#testButton').button('loading');
-						
 						var res = $.ajax({
 							url : model.basePath + replacedPath,
 							type: requestMethod,
-							data: $("#inputJson").val(),
+							data: formData,
 							headers: headers,
-							contentType: $("#consumes input:checked").val(),
+							xhrFields: {
+					            withCredentials: true
+					        },
+					        crossDomain: true,
+							contentType: contentType,
+							processData: processData,
 							success : function(data) {
+								if (replacedPath.startsWith('/api/v1/public/login')) {
+									authId = data.d;
+								}
 								printResponse(data, res, this.url);
 							},
 							error: function(data) {
@@ -1307,7 +1401,13 @@
 			dataType: 'json',
 			contentType: "application/json; charset=utf-8",
 			success : function(data) {
-				buildFromJSONDoc(data);
+				if (!data) {
+					alert('unkown error, please check network!');
+				} else if (data.errorMsg) {
+					alert(data.errorMsg);
+				} else {
+					buildFromJSONDoc(data);
+				}
 			},
 			error: function(msg) {
 				alert("Error " + msg);

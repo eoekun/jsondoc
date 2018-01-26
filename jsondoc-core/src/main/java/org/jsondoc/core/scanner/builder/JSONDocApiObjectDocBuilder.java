@@ -38,7 +38,8 @@ public class JSONDocApiObjectDocBuilder {
 		}
 
 		if (apiObject.name().trim().isEmpty()) {
-			apiObjectDoc.setName(clazz.getSimpleName().toLowerCase());
+			// eoekun remove java.lang.String.toLowerCase()
+			apiObjectDoc.setName(clazz.getSimpleName());
 		} else {
 			apiObjectDoc.setName(apiObject.name());
 		}

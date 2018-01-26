@@ -18,6 +18,10 @@ public class JSONDoc {
 	private ApiGlobalDoc global;
 	private boolean playgroundEnabled;
 	private MethodDisplay displayMethodAs;
+	/**
+	 * 错误消息
+	 */
+	private String errorMsg;
 
 	public enum MethodDisplay {
 		URI, SUMMARY, METHOD;
@@ -91,6 +95,14 @@ public class JSONDoc {
 
 	public void setGlobal(ApiGlobalDoc global) {
 		this.global = global;
+	}
+
+	public String getErrorMsg() {
+		return errorMsg;
+	}
+
+	public void setErrorMsg(String errorMsg) {
+		this.errorMsg = errorMsg;
 	}
 
 	@Override
