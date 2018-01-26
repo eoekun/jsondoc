@@ -158,7 +158,7 @@ public abstract class AbstractJSONDocScanner implements JSONDocScanner {
 		Set<Method> methods = jsondocMethods(controller);
 		for (Method method : methods) {
 			Api apiAnnotation = method.getAnnotation(Api.class);
-			if (ApiVisibility.PRIVATE.equals(apiAnnotation.visibility())) {
+			if (null != apiAnnotation && ApiVisibility.PRIVATE.equals(apiAnnotation.visibility())) {
 				// add by eoekun
 				continue;
 			}
