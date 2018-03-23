@@ -83,3 +83,17 @@ table td {
 .font-monospace {
 	font-family:Consolas,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New, monospace;
 }
+
+#accordion .panel-heading .panel-title a {
+	font-size:14px;
+}
+
+code.method-url {
+	font-size:6px;
+}
+
+#requestObjectTypes, #responseObjectTypes {
+	display:none;
+}
+
+
