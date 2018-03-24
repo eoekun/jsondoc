@@ -481,8 +481,10 @@
 							<th colspan=2>Body object</th>
 						</tr>
 						<tr>
-							<td colspan=2><a href="javascript:void(0);" onclick="showObjectDetail(true)"><code>{{bodyobject.jsondocType.oneLineText}}</code></a>
-								<span id="requestObjectTypes">{{bodyobject.jsondocType.type}}</span>
+							<td colspan=2>
+								<a href="javascript:void(0);" onclick="showObjectDetail('{{bodyobject.jsondocType.type}}')">
+									<code>{{bodyobject.jsondocType.oneLineText}}</code>
+								</a>
 							</td>
 						</tr>
 					{{/if}}
@@ -499,8 +501,10 @@
 							<th colspan=2>Response object</th>
 						</tr>
 						<tr>
-							<td colspan=2><a href="javascript:void(0);" onclick="showObjectDetail(false)"><code>{{response.jsondocType.oneLineText}}</code></a>
-								<span id="responseObjectTypes">{{response.jsondocType.type}}</span>
+							<td colspan=2>
+								<a href="javascript:void(0);" onclick="showObjectDetail('{{response.jsondocType.type}}')">
+									<code>{{response.jsondocType.oneLineText}}</code>
+								</a>
 							</td>
 						</tr>
 					{{/if}}
@@ -1499,37 +1503,34 @@
 			}
 		});
 	}
-	function showObjectDetail(isRequest) {
-		var typeStr;
-		if (isRequest) {
-			typeStr = $('#requestObjectTypes').html();
-		} else {
-			typeStr = $('#responseObjectTypes').html();
-		}
+	function showObjectDetail(typeStr) {
 		if (typeStr) {
 			var types = typeStr.split(',');
-			if(types.length > 6){
-				layer.msg('当前返回结果层级超过6层,未做展示实现!');
+			if(types.length > 5){
+				layer.msg('当前返回结果层级超过5层,未做展示实现!');
 				return;
 			}else if(types.length == 1){
 				showObjectDetailLayer(types[0]);
 				return;
 			}
 			layer.confirm('选择查看的对象', {
+				shadeClose : true,
 				btn : types,
-				shadeClose : true
-			}, function() {
-				showObjectDetailLayer(types[0]);
-			}, function() {
-				showObjectDetailLayer(types[1]);
-			}, function() {
-				showObjectDetailLayer(types[2]);
-			}, function() {
-				showObjectDetailLayer(types[3]);
-			}, function() {
-				showObjectDetailLayer(types[4]);
-			}, function() {
-				showObjectDetailLayer(types[5]);
+				yes : function(index, layero){
+					showObjectDetailLayer(types[0]);
+				},
+				btn2 : function(index, layero){
+					showObjectDetailLayer(types[1]);
+				},
+				btn3 : function(index, layero){
+					showObjectDetailLayer(types[2]);
+				},
+				btn4 : function(index, layero){
+					showObjectDetailLayer(types[3]);
+				},
+				btn5 : function(index, layero){
+					showObjectDetailLayer(types[4]);
+				}
 			});
 		}
 	}
