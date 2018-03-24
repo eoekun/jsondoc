@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>org.jsondoc</groupId>
 		<artifactId>jsondoc-master</artifactId>
-		<version>1.3.0-EOEKUN</version>
+		<version>1.3.1-EOEKUN</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
