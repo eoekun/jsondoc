@@ -18,6 +18,8 @@ public class JSONDoc {
 	private ApiGlobalDoc global;
 	private boolean playgroundEnabled;
 	private MethodDisplay displayMethodAs;
+	// 所有 object,key 为 name,name 不能重复
+	private Map<String, ApiObjectDoc> uniqueObjects;
 	/**
 	 * 错误消息
 	 */
@@ -103,6 +105,14 @@ public class JSONDoc {
 
 	public void setErrorMsg(String errorMsg) {
 		this.errorMsg = errorMsg;
+	}
+
+	public Map<String, ApiObjectDoc> getUniqueObjects() {
+		return uniqueObjects;
+	}
+
+	public void setUniqueObjects(Map<String, ApiObjectDoc> uniqueObjects) {
+		this.uniqueObjects = uniqueObjects;
 	}
 
 	@Override

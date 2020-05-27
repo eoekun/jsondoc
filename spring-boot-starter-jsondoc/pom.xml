@@ -5,11 +5,7 @@
 	<parent>
 		<artifactId>jsondoc-master</artifactId>
 		<groupId>org.jsondoc</groupId>
-<<<<<<< HEAD
-		<version>1.2.19-EOEKUN</version>
-=======
 		<version>1.2.22</version>
->>>>>>> de5bd0024b4e5444a541fa4fa4ec518176b646f3
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 

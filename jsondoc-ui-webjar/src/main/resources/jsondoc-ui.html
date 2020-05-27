@@ -25,7 +25,7 @@
 <body>
 
 	<nav class="navbar navbar-inverse navbar-fixed-top">
-		<div class="container-fluid">
+		<div class="container-fluid"> 
 			<div class="navbar-header">
 		    	<a class="navbar-brand" href="#">JSONDoc</a>
     		</div>
@@ -282,7 +282,10 @@
 					<span class="label pull-right verb {{this}}">{{this}}</span>
 				{{/each}}
 				{{#each displayedMethodString}}
-					<a id="{{../jsondocId}}" href="#_{{../jsondocId}}" rel="method" data-toggle="collapse" data-parent="#accordion" aria-controls="_{{../jsondocId}}" aria-expanded="true">{{../displayedMethodString}}({{../description}})</a><br/>	
+					<code class="method-url">{{../displayedMethodString}}</code>
+					<br/>
+					<a id="{{../jsondocId}}" href="#_{{../jsondocId}}" rel="method" data-toggle="collapse" data-parent="#accordion" aria-controls="_{{../jsondocId}}" aria-expanded="true">{{../description}}</a>
+					<br/>
 				{{/each}}
 			</h4>
 		</div>
@@ -478,7 +481,11 @@
 							<th colspan=2>Body object</th>
 						</tr>
 						<tr>
-							<td colspan=2><code>{{bodyobject.jsondocType.oneLineText}}</code></td>
+							<td colspan=2>
+								<a href="javascript:void(0);" onclick="showObjectDetail('{{bodyobject.jsondocType.type}}')">
+									<code>{{bodyobject.jsondocType.oneLineText}}</code>
+								</a>
+							</td>
 						</tr>
 					{{/if}}
 					{{#if responsestatuscode}}
@@ -494,7 +501,11 @@
 							<th colspan=2>Response object</th>
 						</tr>
 						<tr>
-							<td colspan=2><code>{{response.jsondocType.oneLineText}}</code></td>
+							<td colspan=2>
+								<a href="javascript:void(0);" onclick="showObjectDetail('{{response.jsondocType.type}}')">
+									<code>{{response.jsondocType.oneLineText}}</code>
+								</a>
+							</td>
 						</tr>
 					{{/if}}
 					{{#if apierrors}}
@@ -778,6 +789,84 @@
 </script>
 
 <script id="object" type="text/x-handlebars-template">
+<table class="table table-condensed table-striped table-bordered" style="table-layout: fixed;">
+	<tr><th style="width:30%;">Name</th><td><code>{{name}}</code></td></tr>
+	{{#if description}}
+		<tr><th>Description</th><td>{{{description}}}</td></tr>
+	{{/if}}
+	{{#if supportedversions}}
+		<tr>
+			<td>Since version</td>
+			<td>{{supportedversions.since}}</td>
+		</tr>
+		{{#if supportedversions.until}}
+			<tr>
+				<td>Until version</td>
+				<td>{{supportedversions.until}}</td>	
+			</tr>
+		{{/if}}	
+	{{/if}}
+	{{#if visibility}}
+		{{#equal visibility "UNDEFINED"}}
+		{{else}}
+		<tr>
+			<th>Visibility</th>
+			<td>{{visibility}}</td>
+		</tr>
+		{{/equal}}
+	{{/if}}
+	{{#if stage}}
+		{{#equal stage "UNDEFINED"}}
+		{{else}}
+		<tr>
+			<th>Stage</th>
+			<td>{{stage}}</td>
+		</tr>
+		{{/equal}}
+	{{/if}}
+	{{#if allowedvalues}}
+		<tr><td></td><td>Allowed values: {{allowedvalues}}</td></tr>
+	{{/if}}
+	{{#if fields}}
+	<tr><th colspan=2>Fields</th></tr>
+		{{#each fields}}
+			{{#if description}}
+				<tr><td><code>{{name}}</code></td><td>{{{description}}}</td></tr>
+				<tr><td></td><td>Type: <code>{{jsondocType.oneLineText}}</code></td></tr>
+			{{else}}
+				<tr><td><code>{{name}}</code></td><td>Type: <code>{{jsondocType.oneLineText}}</code></td></tr>
+			{{/if}}
+			{{#equal required "UNDEFINED"}}
+			{{else}}
+				<tr><td></td><td>Required: {{required}}</td></tr>				
+			{{/equal}}
+			{{#if format}}
+				<tr><td></td><td>Format: {{displayedFormat}}</td></tr>
+			{{/if}}
+			{{#if allowedvalues}}
+				<tr><td></td><td>Allowed values: {{allowedvalues}}</td></tr>
+			{{/if}}
+			{{#if supportedversions}}
+				<tr><td></td><td>Since version {{supportedversions.since}}</td></tr>
+				{{#if supportedversions.until}}
+					<tr><td></td><td>Until version {{supportedversions.until}}</td></tr>
+				{{/if}}
+			{{/if}}
+		{{/each}}
+	{{/if}}
+</table>
+{{#if jsondochints}}
+	<div class="alert alert-info alert-dismissible border-radius-none">
+		<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+		<p><strong>Hints to provide a better understanding of your API:</strong></p>
+		<ul class="list-unstyled">
+		{{#each jsondochints}} <li>- {{this}}</li> {{/each}}
+		</ul>
+	</div>
+{{/if}}
+</script>
+
+<script id="methodObject" type="text/x-handlebars-template">
 <table class="table table-condensed table-striped table-bordered" style="table-layout: fixed;">
 	<tr><th style="width:30%;">Name</th><td><code>{{name}}</code></td></tr>
 	{{#if description}}
@@ -1414,7 +1503,56 @@
 			}
 		});
 	}
+	function showObjectDetail(typeStr) {
+		if (typeStr) {
+			var types = typeStr.split(',');
+			if(types.length > 5){
+				layer.msg('当前返回结果层级超过5层,未做展示实现!');
+				return;
+			}else if(types.length == 1){
+				showObjectDetailLayer(types[0]);
+				return;
+			}
+			layer.confirm('选择查看的对象', {
+				shadeClose : true,
+				btn : types,
+				yes : function(index, layero){
+					showObjectDetailLayer(types[0]);
+				},
+				btn2 : function(index, layero){
+					showObjectDetailLayer(types[1]);
+				},
+				btn3 : function(index, layero){
+					showObjectDetailLayer(types[2]);
+				},
+				btn4 : function(index, layero){
+					showObjectDetailLayer(types[3]);
+				},
+				btn5 : function(index, layero){
+					showObjectDetailLayer(types[4]);
+				}
+			});
+		}
+	}
+	function showObjectDetailLayer(type){
+		var objectData = model.uniqueObjects[type];
+		if(!objectData){
+			layer.msg('该对象为常量对象,非自定义模型,例如:Void 为 undefined,List 为集合...');
+			return;
+		}
+		var methodObject = Handlebars.compile($("#methodObject").html());
+		var methodsHTML = methodObject(objectData);
+		layer.open({
+			type : 1,
+			shadeClose : true,
+			title : '参数/响应结果详情',
+			shade : 0.6, //遮罩透明度
+			maxmin : true, //允许全屏最小化
+			anim : 1, //0-6的动画形式，-1不开启
+			content : methodsHTML
+		});
+	}
 </script>
-
+<script type="text/javascript" src="webjars/jsondoc-ui-webjar/layer/layer.js"></script>
 </body>
 </html>

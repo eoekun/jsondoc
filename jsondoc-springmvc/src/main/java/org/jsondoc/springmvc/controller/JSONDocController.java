@@ -1,10 +1,14 @@
 package org.jsondoc.springmvc.controller;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
+import org.jsondoc.core.pojo.ApiObjectDoc;
 import org.jsondoc.core.pojo.JSONDoc;
 import org.jsondoc.core.pojo.JSONDoc.MethodDisplay;
 import org.jsondoc.core.scanner.JSONDocScanner;
@@ -109,13 +113,34 @@ public class JSONDocController {
 		}
 		try {
 			List<String> packages = getPackages();
-			return jsondocScanner.getJSONDoc(version, basePath, packages, playgroundEnabled, displayMethodAs);
+			result = jsondocScanner.getJSONDoc(version, basePath, packages, playgroundEnabled, displayMethodAs);
+			result.setUniqueObjects(getUniqueObjects(result.getObjects()));
+			return result;
 		} catch (Exception e) {
 			LOGGER.error("get jsondoc api json exception,", e);
 			result = new JSONDoc(version, basePath);
 			result.setErrorMsg(e.getMessage());
 			return result;
 		}
+	}
+
+	private Map<String, ApiObjectDoc> getUniqueObjects(Map<String, Set<ApiObjectDoc>> objects) {
+		Map<String, ApiObjectDoc> map = new HashMap<>();
+		if (null != objects && !objects.isEmpty()) {
+			Collection<Set<ApiObjectDoc>> objectSet = objects.values();
+			for (Set<ApiObjectDoc> set : objectSet) {
+				if (null != set && !set.isEmpty()) {
+					for (ApiObjectDoc apiObjectDoc : set) {
+						String key = apiObjectDoc.getName();
+						if (map.containsKey(key)) {
+							LOGGER.warn("object name 存在重复,name:{}", key);
+						}
+						map.put(key, apiObjectDoc);
+					}
+				}
+			}
+		}
+		return map;
 	}
 
 	/**
